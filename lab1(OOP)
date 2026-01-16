@@ -1,0 +1,95 @@
+from typing import Generic, List, Optional, TypeVar
+
+T = TypeVar("T")
+
+
+class SimpleQueue(Generic[T]):
+    """Очередь FIFO"""
+
+    def __init__(self):
+        self._items: List[T] = []
+
+    def put(self, value: T) -> None:
+        """Добавить элемент"""
+        self._items.append(value)
+
+    def get(self) -> Optional[T]:
+        """Извлечь элемент"""
+        if self.is_empty():
+            return None
+        return self._items.pop(0)
+
+    def front(self) -> Optional[T]:
+        """Посмотреть первый"""
+        if self.is_empty():
+            return None
+        return self._items[0]
+
+    def is_empty(self) -> bool:
+        return len(self._items) == 0
+
+    def count(self) -> int:
+        return len(self._items)
+
+    def __str__(self) -> str:
+        return f"Queue -> {self._items}"
+
+
+class SimpleStack(Generic[T]):
+    """Стек LIFO"""
+
+    def __init__(self):
+        self._items: List[T] = []
+
+    def push(self, value: T) -> None:
+        """Добавить элемент"""
+        self._items.append(value)
+
+    def pop(self) -> Optional[T]:
+        """Извлечь элемент"""
+        if self.is_empty():
+            return None
+        return self._items.pop()
+
+    def peek(self) -> Optional[T]:
+        """Посмотреть верхний"""
+        if self.is_empty():
+            return None
+        return self._items[-1]
+
+    def is_empty(self) -> bool:
+        return len(self._items) == 0
+
+    def count(self) -> int:
+        return len(self._items)
+
+    def __str__(self) -> str:
+        return f"Stack -> {self._items}"
+
+
+# ====== ТЕСТ ======
+print("\n=== ООП РЕАЛИЗАЦИЯ ===")
+
+print("\nОчередь:")
+q = SimpleQueue[str]()
+q.put("один")
+q.put("два")
+q.put("три")
+
+print(q)
+print("Первый элемент:", q.front())
+print("Удаляем:", q.get())
+print("Теперь первый:", q.front())
+print("Размер:", q.count())
+
+print("\nСтек:")
+s = SimpleStack[str]()
+s.push("X")
+s.push("Y")
+s.push("Z")
+
+print(s)
+print("Верхний элемент:", s.peek())
+print("Удаляем:", s.pop())
+print("Теперь верхний:", s.peek())
+print("Размер:", s.count())
