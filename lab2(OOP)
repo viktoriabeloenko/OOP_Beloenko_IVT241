@@ -1,0 +1,107 @@
+from typing import List, Union
+
+
+Number = Union[int, float]
+
+
+class Matrix:
+    """Математическая матрица"""
+
+    def __init__(self, values: List[List[Number]]):
+        self._values = values
+        self._rows = len(values)
+        self._cols = len(values[0])
+
+    # ---------- Сложение ----------
+    def __add__(self, other: "Matrix") -> "Matrix":
+        if self._rows != other._rows or self._cols != other._cols:
+            raise ValueError("Нельзя сложить матрицы разного размера")
+
+        result = []
+        for i in range(self._rows):
+            row = []
+            for j in range(self._cols):
+                row.append(self._values[i][j] + other._values[i][j])
+            result.append(row)
+
+        return Matrix(result)
+
+    # ---------- Умножение ----------
+    def __mul__(self, other: Union["Matrix", Number]) -> "Matrix":
+        # Умножение на число
+        if isinstance(other, (int, float)):
+            result = []
+            for i in range(self._rows):
+                row = []
+                for j in range(self._cols):
+                    row.append(self._values[i][j] * other)
+                result.append(row)
+            return Matrix(result)
+
+        # Умножение на матрицу
+        if self._cols != other._rows:
+            raise ValueError("Нельзя умножить: количество столбцов != количеству строк")
+
+        result = []
+        for i in range(self._rows):
+            row = []
+            for j in range(other._cols):
+                total = 0
+                for k in range(self._cols):
+                    total += self._values[i][k] * other._values[k][j]
+                row.append(total)
+            result.append(row)
+
+        return Matrix(result)
+
+    # ---------- Транспонирование ----------
+    def transpose(self) -> "Matrix":
+        result = []
+        for j in range(self._cols):
+            row = []
+            for i in range(self._rows):
+                row.append(self._values[i][j])
+            result.append(row)
+        return Matrix(result)
+
+    # ---------- Строковый вывод ----------
+    def __str__(self) -> str:
+        lines = []
+        for row in self._values:
+            lines.append(" ".join(f"{x:6}" for x in row))
+        return "\n".join(lines)
+
+
+# ====== ТЕСТ ООП ======
+print("=" * 40)
+print("ООП РЕАЛИЗАЦИЯ")
+print("=" * 40)
+
+A = Matrix([[1, 2, 3],
+            [4, 5, 6]])
+
+B = Matrix([[2, 0, 1],
+            [1, 2, 3]])
+
+C = Matrix([[1, 2],
+            [3, 4],
+            [5, 6]])
+
+print("\nМатрица A:")
+print(A)
+print("\nМатрица B:")
+print(B)
+print("\nМатрица C:")
+print(C)
+
+print("\n1. A + B:")
+print(A + B)
+
+print("\n2. A * 2:")
+print(A * 2)
+
+print("\n3. A * C:")
+print(A * C)
+
+print("\n4. Транспонирование A:")
+print(A.transpose())
