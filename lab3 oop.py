@@ -1,70 +1,144 @@
-from typing import List, Union
+"""
+ООП-подход С СОБЛЮДЕНИЕМ инкапсуляции.
+"""
 
-Number = Union[int, float]
+import json
+import datetime as dt
+import uuid
+from typing import Dict, List, Any, Optional
 
 
-class Matrix:
-    """Матричный класс (ООП стиль)"""
+class Person:
+    def __init__(self, name: str, born_in: dt.datetime) -> None:
+        self._id = str(uuid.uuid4())
+        self._name = name
+        self._born_in = born_in
+        self._friends: List['Person'] = []
 
-    def __init__(self, data: List[List[Number]]):
-        self.data = data
-        self.rows = len(data)
-        self.cols = len(data[0])
+    def add_friend(self, friend: 'Person') -> None:
+        """Добавляет друга (двусторонняя связь)"""
+        if friend not in self._friends:
+            self._friends.append(friend)
+            friend._friends.append(self)
 
-    # ===== СЛОЖЕНИЕ МАТРИЦ =====
-    def __add__(self, other: "Matrix") -> "Matrix":
-        if self.rows != other.rows or self.cols != other.cols:
-            raise ValueError("ОШИБКА: размеры матриц не совпадают")
+    # ---------- Публичные геттеры ----------
 
-        result = []
-        for i in range(self.rows):
-            row = []
-            for j in range(self.cols):
-                row.append(self.data[i][j] + other.data[i][j])
-            result.append(row)
-        return Matrix(result)
+    def get_id(self) -> str:
+        return self._id
 
-    # ===== УМНОЖЕНИЕ (МАТРИЦА ИЛИ СКАЛЯР) =====
-    def __mul__(self, other: Union["Matrix", Number]) -> "Matrix":
-        # Умножение на число
-        if isinstance(other, (int, float)):
-            result = []
-            for i in range(self.rows):
-                row = []
-                for j in range(self.cols):
-                    row.append(self.data[i][j] * other)
-                result.append(row)
-            return Matrix(result)
+    def get_name(self) -> str:
+        return self._name
 
-        # Умножение на матрицу
-        if self.cols != other.rows:
-            raise ValueError("ОШИБКА: нельзя умножить матрицы с такими размерами")
+    def get_birth_date(self) -> dt.datetime:
+        return self._born_in
 
-        result = []
-        for i in range(self.rows):
-            row = []
-            for j in range(other.cols):
-                sum_val = 0
-                for k in range(self.cols):
-                    sum_val += self.data[i][k] * other.data[k][j]
-                row.append(sum_val)
-            result.append(row)
-        return Matrix(result)
+    def get_friends(self) -> List['Person']:
+        # Возвращаем копию, чтобы защитить внутреннее состояние
+        return self._friends.copy()
 
-    # ===== ТРАНСПОНИРОВАНИЕ =====
-    def transpose(self) -> "Matrix":
-        result = []
-        for j in range(self.cols):
-            row = []
-            for i in range(self.rows):
-                row.append(self.data[i][j])
-            result.append(row)
-        return Matrix(result)
+    # ---------- Методы сериализации ----------
 
-    # ===== ВЫВОД =====
-    def __str__(self) -> str:
-        lines = []
-        for row in self.data:
-            line = " ".join(f"{x:6}" for x in row)
-            lines.append(line)
-        return "\n".join(lines)
+    def to_serializable(self) -> Dict[str, Any]:
+        """
+        Преобразует объект Person в словарь,
+        используя только публичные методы.
+        """
+        return {
+            "id": self.get_id(),
+            "name": self.get_name(),
+            "born_in": self.get_birth_date().isoformat(),
+            "friends": [friend.get_id() for friend in self.get_friends()]
+        }
+
+    @classmethod
+    def from_serializable(cls, data: Dict[str, Any]) -> 'Person':
+        """
+        Создаёт объект Person из словаря.
+        init не используется, так как данные уже есть.
+        """
+        obj = cls.__new__(cls)
+        obj._id = data["id"]
+        obj._name = data["name"]
+        obj._born_in = dt.datetime.fromisoformat(data["born_in"])
+        obj._friends = []
+        return obj
+
+
+class PersonSerializer:
+    """
+    Отдельный класс для сериализации Person.
+    Использует публичный интерфейс класса.
+    """
+
+    @staticmethod
+    def encode(person: Person) -> bytes:
+        """
+        Кодирует объект Person в JSON.
+        Корректно обрабатывает циклические ссылки.
+        """
+        visited_ids = set()
+        serialized_objects: List[Dict[str, Any]] = []
+
+        def collect(p: Person) -> None:
+            if p.get_id() in visited_ids:
+                return
+
+            visited_ids.add(p.get_id())
+            serialized_objects.append(p.to_serializable())
+
+            # Рекурсивно обходим друзей
+            for friend in p.get_friends():
+                collect(friend)
+
+        collect(person)
+        return json.dumps(serialized_objects, indent=2).encode("utf-8")
+
+    @staticmethod
+    def decode(data: bytes) -> Person:
+        """
+        Декодирует JSON обратно в объекты Person.
+        Используется двухфазное восстановление:
+        1. Создание объектов
+        2. Восстановление связей
+        """
+        raw_data = json.loads(data.decode("utf-8"))
+        cache: Dict[str, Person] = {}
+
+        # Фаза 1: создание всех объектов
+        for item in raw_data:
+            person = Person.from_serializable(item)
+            cache[person.get_id()] = person
+
+        # Фаза 2: восстановление связей
+        for item in raw_data:
+            person = cache[item["id"]]
+            for friend_id in item["friends"]:
+                person._friends.append(cache[friend_id])
+
+        # Возвращаем корневой объект
+        return cache[raw_data[0]["id"]]
+        # ================== Пример использования ==================
+
+if name == "__main__":
+    print("=== ООП с инкапсуляцией ===")
+
+    p1 = Person("Ivan", dt.datetime(2020, 4, 12))
+    p2 = Person("Petr", dt.datetime(2021, 9, 27))
+    p3 = Person("Anna", dt.datetime(2019, 3, 15))
+
+    p1.add_friend(p2)
+    p2.add_friend(p3)
+    p3.add_friend(p1)  # цикл
+
+    encoded = PersonSerializer.encode(p1)
+    print("Закодированные данные:")
+    print(encoded.decode("utf-8"))
+
+    restored = PersonSerializer.decode(encoded)
+
+    print("\nПроверка восстановления:")
+    print(f"Имя: {restored.get_name()}")
+    print(f"Друзей: {len(restored.get_friends())}")
+    print(
+        f"Друг друга: {restored.get_friends()[0].get_friends()[0].get_name()}"
+    )
