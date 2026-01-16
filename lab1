@@ -1,0 +1,114 @@
+from typing import Any, Dict, Optional, Tuple
+import copy
+
+
+# ====== QUEUE (очередь) ======
+
+def new_queue() -> Dict[str, Any]:
+    """Создание новой очереди"""
+    return {"data": []}
+
+
+def add_to_queue(queue: Dict[str, Any], value: Any) -> Dict[str, Any]:
+    """Добавить элемент в очередь"""
+    q_copy = copy.deepcopy(queue)
+    q_copy["data"].append(value)
+    return q_copy
+
+
+def take_from_queue(queue: Dict[str, Any]) -> Tuple[Optional[Any], Dict[str, Any]]:
+    """Извлечь элемент из очереди"""
+    if not queue["data"]:
+        return None, queue
+
+    q_copy = copy.deepcopy(queue)
+    element = q_copy["data"].pop(0)
+    return element, q_copy
+
+
+def first_in_queue(queue: Dict[str, Any]) -> Optional[Any]:
+    """Посмотреть первый элемент"""
+    if not queue["data"]:
+        return None
+    return queue["data"][0]
+
+
+def queue_length(queue: Dict[str, Any]) -> int:
+    """Количество элементов"""
+    return len(queue["data"])
+
+
+def queue_view(queue: Dict[str, Any]) -> str:
+    """Вывод очереди"""
+    return f"Queue -> {queue['data']}"
+
+
+# ====== STACK (стек) ======
+
+def new_stack() -> Dict[str, Any]:
+    """Создание нового стека"""
+    return {"data": []}
+
+
+def push_to_stack(stack: Dict[str, Any], value: Any) -> Dict[str, Any]:
+    """Положить элемент в стек"""
+    s_copy = copy.deepcopy(stack)
+    s_copy["data"].append(value)
+    return s_copy
+
+
+def pop_from_stack(stack: Dict[str, Any]) -> Tuple[Optional[Any], Dict[str, Any]]:
+    """Достать элемент из стека"""
+    if not stack["data"]:
+        return None, stack
+
+    s_copy = copy.deepcopy(stack)
+    element = s_copy["data"].pop()
+    return element, s_copy
+
+
+def top_of_stack(stack: Dict[str, Any]) -> Optional[Any]:
+    """Посмотреть верхний элемент"""
+    if not stack["data"]:
+        return None
+    return stack["data"][-1]
+
+
+def stack_length(stack: Dict[str, Any]) -> int:
+    """Количество элементов"""
+    return len(stack["data"])
+
+
+def stack_view(stack: Dict[str, Any]) -> str:
+    """Вывод стека"""
+    return f"Stack -> {stack['data']}"
+
+
+# ====== ТЕСТ ======
+print("\n=== ФУНКЦИОНАЛЬНАЯ РЕАЛИЗАЦИЯ ===")
+
+print("\nОчередь:")
+q = new_queue()
+q = add_to_queue(q, "один")
+q = add_to_queue(q, "два")
+q = add_to_queue(q, "три")
+
+print(queue_view(q))
+print("Первый элемент:", first_in_queue(q))
+print("Удаляем:", take_from_queue(q)[0])
+item, q = take_from_queue(q)
+print("Теперь первый:", first_in_queue(q))
+print("Размер:", queue_length(q))
+
+print("\nСтек:")
+s = new_stack()
+s = push_to_stack(s, "X")
+s = push_to_stack(s, "Y")
+s = push_to_stack(s, "Z")
+
+print(stack_view(s))
+print("Верхний элемент:", top_of_stack(s))
+print("Удаляем:", pop_from_stack(s)[0])
+item, s = pop_from_stack(s)
+print("Теперь верхний:", top_of_stack(s))
+print("Размер:", stack_length(s))
