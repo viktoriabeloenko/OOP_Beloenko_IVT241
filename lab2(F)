@@ -1,0 +1,112 @@
+from typing import Dict, List, Union
+
+Number = Union[int, float]
+
+
+# ---------- Создание матрицы ----------
+def new_matrix(values: List[List[Number]]) -> Dict:
+    return {
+        "values": values,
+        "r": len(values),
+        "c": len(values[0])
+    }
+
+
+# ---------- Сложение ----------
+def sum_matrix(m1: Dict, m2: Dict) -> Dict:
+    if m1["r"] != m2["r"] or m1["c"] != m2["c"]:
+        raise ValueError("Размеры матриц не совпадают")
+
+    result = []
+    for i in range(m1["r"]):
+        row = []
+        for j in range(m1["c"]):
+            row.append(m1["values"][i][j] + m2["values"][i][j])
+        result.append(row)
+
+    return new_matrix(result)
+
+
+# ---------- Умножение на число ----------
+def scale_matrix(m: Dict, k: Number) -> Dict:
+    result = []
+    for i in range(m["r"]):
+        row = []
+        for j in range(m["c"]):
+            row.append(m["values"][i][j] * k)
+        result.append(row)
+
+    return new_matrix(result)
+
+
+# ---------- Умножение матриц ----------
+def product_matrix(m1: Dict, m2: Dict) -> Dict:
+    if m1["c"] != m2["r"]:
+        raise ValueError("Нельзя умножить такие матрицы")
+
+    result = []
+    for i in range(m1["r"]):
+        row = []
+        for j in range(m2["c"]):
+            total = 0
+            for k in range(m1["c"]):
+                total += m1["values"][i][k] * m2["values"][k][j]
+            row.append(total)
+        result.append(row)
+
+    return new_matrix(result)
+
+
+# ---------- Транспонирование ----------
+def flip_matrix(m: Dict) -> Dict:
+    result = []
+    for j in range(m["c"]):
+        row = []
+        for i in range(m["r"]):
+            row.append(m["values"][i][j])
+        result.append(row)
+
+    return new_matrix(result)
+
+
+# ---------- Вывод ----------
+def show_matrix(m: Dict) -> str:
+    lines = []
+    for row in m["values"]:
+        lines.append(" ".join(f"{x:6}" for x in row))
+    return "\n".join(lines)
+
+
+# ====== ТЕСТ ФУНКЦИЙ ======
+print("\n" + "=" * 40)
+print("ФУНКЦИОНАЛЬНАЯ РЕАЛИЗАЦИЯ")
+print("=" * 40)
+
+A = new_matrix([[1, 2, 3],
+                [4, 5, 6]])
+
+B = new_matrix([[2, 0, 1],
+                [1, 2, 3]])
+
+C = new_matrix([[1, 2],
+                [3, 4],
+                [5, 6]])
+
+print("\nМатрица A:")
+print(show_matrix(A))
+print("\nМатрица B:")
+print(show_matrix(B))
+print("\nМатрица C:")
+print(show_matrix(C))
+
+print("\n1. A + B:")
+print(show_matrix(sum_matrix(A, B)))
+
+print("\n2. A * 2:")
+print(show_matrix(scale_matrix(A, 2)))
+
+print("\n3. A * C:")
+print(show_matrix(product_matrix(A, C)))
+
+print("\n4. Транспонирование A:")
+print(show_matrix(flip_matrix(A)))
